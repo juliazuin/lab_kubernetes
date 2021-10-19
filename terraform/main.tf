@@ -17,7 +17,7 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_instance" "maquina_master" {
-  ami           = "${data.aws_ami.ubuntu.id}"
+  ami           = "ami-09e67e426f25ce0d7"
   instance_type = "t2.medium"
   key_name      = "chave_development_julia"
   subnet_id = "subnet-0734ecf92f4be11fa"
@@ -37,7 +37,7 @@ resource "aws_instance" "maquina_master" {
 }
 
 resource "aws_instance" "workers" {
-  ami           = "${data.aws_ami.ubuntu.id}"
+  ami           = "ami-09e67e426f25ce0d7"
   instance_type = "t2.micro"
   key_name      = "chave_development_julia"
   subnet_id = "subnet-0734ecf92f4be11fa"
