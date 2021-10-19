@@ -62,30 +62,17 @@ resource "aws_security_group" "acessos_master" {
 
   ingress = [
     {
-      description      = "SSH from VPC"
+      cidr_blocks      = []
+      description      = ""
       from_port        = 22
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol         = "tcp"
+      security_groups  = [
+          "sg-0cf865220839b7bca",
+        ]
+      self             = false
       to_port          = 22
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
-      prefix_list_ids = null,
-      security_groups: null,
-      self: null
-    },
-    {
-      description      = "Libera porta kubernetes"
-      from_port        = 6443
-      to_port          = 6443
-      protocol         = "tcp"
-      cidr_blocks      = [
-        "${chomp(data.http.myip.body)}/32",
-        "${aws_instance.workers[0].private_ip}/32",
-        "${aws_instance.workers[1].private_ip}/32",
-      ]
-      ipv6_cidr_blocks = ["::/0"]
-      prefix_list_ids = null,
-      security_groups: null,
-      self: null
     },
   ]
 
@@ -126,6 +113,20 @@ resource "aws_security_group" "acessos_workers" {
       security_groups: null,
       self: null
     },
+
+    {
+      cidr_blocks      = []
+      description      = ""
+      from_port        = 22
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol         = "tcp"
+      security_groups  = [
+          "sg-096dd51f38adbcf33",
+        ]
+      self             = false
+      to_port          = 22
+    }
   ]
 
   egress = [
