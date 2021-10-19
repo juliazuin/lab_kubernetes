@@ -21,7 +21,7 @@ resource "aws_instance" "maquina_master" {
   instance_type = "t2.medium"
   key_name      = "chave_development_julia"
   subnet_id = "subnet-0734ecf92f4be11fa"
-
+  associate_public_ip_address = true
   root_block_device {
     encrypted = true
     kms_key_id  = "arn:aws:kms:us-east-1:534566538491:key/90847cc8-47e8-4a75-8a69-2dae39f0cc0d" #key managment service (aws) -> awsmanaged keys -> aws/ebs -> copy arn
@@ -41,6 +41,7 @@ resource "aws_instance" "workers" {
   instance_type = "t2.micro"
   key_name      = "chave_development_julia"
   subnet_id = "subnet-0734ecf92f4be11fa"
+  associate_public_ip_address = true
   root_block_device {
     encrypted = true
     kms_key_id  = "arn:aws:kms:us-east-1:534566538491:key/90847cc8-47e8-4a75-8a69-2dae39f0cc0d" #key managment service (aws) -> awsmanaged keys -> aws/ebs -> copy arn
