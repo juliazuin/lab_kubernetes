@@ -34,7 +34,7 @@ resource "aws_instance" "workers" {
   instance_type = "t2.micro"
   key_name      = "chave_development_julia"
   tags = {
-    Name = "maquina-cluster-kubernetes-${count.index}"
+    Name = "Julia-maquina-cluster-kubernetes-${count.index}"
   }
   vpc_security_group_ids = ["${aws_security_group.acessos_workers.id}"]
   count         = 2
