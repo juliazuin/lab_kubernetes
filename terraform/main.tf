@@ -87,6 +87,19 @@ resource "aws_security_group" "acessos_master" {
       self             = false
       to_port          = 65535
     },
+    {
+      cidr_blocks      = [
+          "0.0.0.0/0",
+        ]
+      description      = ""
+      from_port        = 30001
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol         = "tcp"
+      security_groups  = []
+      self             = false
+      to_port          = 30001
+    }
   ]
 
   egress = [
