@@ -18,7 +18,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "maquina_master" {
   ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.medium"
+  instance_type = "t2.large"
   key_name      = "chave_development_julia"
   subnet_id = "subnet-0734ecf92f4be11fa"
   associate_public_ip_address = true
@@ -38,7 +38,7 @@ resource "aws_instance" "maquina_master" {
 
 resource "aws_instance" "workers" {
   ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.micro"
+  instance_type = "t2.large"
   key_name      = "chave_development_julia"
   subnet_id = "subnet-0734ecf92f4be11fa"
   associate_public_ip_address = true
