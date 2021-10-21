@@ -38,7 +38,7 @@ resource "aws_instance" "k8s_masters" {
   tags = {
     Name = "Julia-k8s-master-${count.index}"
   }
-  vpc_security_group_ids = [aws_security_group.acessos_master.id]
+  vpc_security_group_ids = [aws_security_group.julia_acessos_master.id]
   depends_on = [
     aws_instance.k8s_workers,
   ]
@@ -56,7 +56,7 @@ resource "aws_instance" "k8s_workers" {
 }
 
 
-resource "aws_security_group" "acessos_master" {
+resource "aws_security_group" "julia_acessos_master" {
   name        = "k8s-acessos_master"
   description = "acessos inbound traffic"
   vpc_id = "vpc-063fc945cde94d3ab"
@@ -107,7 +107,7 @@ resource "aws_security_group" "acessos_master" {
 }
 
 
-resource "aws_security_group" "acessos" {
+resource "aws_security_group" "julia_acessos" {
   name        = "k8s-workers"
   description = "acessos inbound traffic"
   vpc_id = "vpc-063fc945cde94d3ab"
@@ -178,9 +178,9 @@ output "output-k8s_proxy" {
 }
 
 output "security-group-workers-e-haproxy" {
-  value = aws_security_group.acessos.id
+  value = aws_security_group.julia_acessos.id
 }
 
 output "security-group-master" {
-  value = aws_security_group.acessos_master.id
+  value = aws_security_group.julia_acessos_master.id
 }
