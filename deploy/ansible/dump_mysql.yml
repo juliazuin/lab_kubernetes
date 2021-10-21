@@ -1,0 +1,8 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: "Create dabatase"
+      shell: echo "create database SpringWebYoutubeTest;"| kubectl exec -it mysql-5fb6fb7fb4-9wdbn  --tty -- mysql -uroot -proot 
+    
+    - name: "Restore dump"
+      shell: cat dump_sql.sql | kubectl exec -it mysql-5fb6fb7fb4-9wdbn  --tty -- mysql -uroot -proot SpringWebYoutubeTest

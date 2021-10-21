@@ -1,0 +1,27 @@
+- hosts: all
+  become: yes
+  tasks:
+  - name: "Aplicar configmap"
+    shell: "kubectl apply -f 1-mysql-configmap.yml"
+
+  - name: "Aplicar configmap"
+    shell: "kubectl apply -f 2-mysql-secret.yml"
+
+  - name: "Aplicar configmap"
+    shell: "kubectl apply -f 3-mysql.yml"
+
+  - name: "Aplicar configmap"
+    shell: "kubectl apply -f 4-deployment.yml"
+
+  - name: "Aplicar configmap"
+    shell: "kubectl apply -f 5-nodeport-javadb.yml"
+
+  - name: "Aplicar configmap"
+    shell: "kubectl apply -f 5-nodeport-javadb.yml"
+
+  - shell: "kubectl get pods | grep mysql"
+    register: ps
+  - debug:
+      msg: " '{{ ps.stdout_lines }}' "
+    
+      
