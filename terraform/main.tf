@@ -20,7 +20,7 @@ resource "aws_instance" "k8s_proxy" {
   tags = {
     Name = "julia-k8s-haproxy"
   }
-  vpc_security_group_ids = [aws_security_group.acessos.id]
+  vpc_security_group_ids = [aws_security_group.julia_acessos.id]
 }
 
 resource "aws_instance" "k8s_masters" {
@@ -52,7 +52,7 @@ resource "aws_instance" "k8s_workers" {
   tags = {
     Name = "k8s_workers-${count.index}"
   }
-  vpc_security_group_ids = [aws_security_group.acessos.id]
+  vpc_security_group_ids = [aws_security_group.julia_acessos.id]
 }
 
 
