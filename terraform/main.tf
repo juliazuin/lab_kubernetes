@@ -6,153 +6,95 @@ data "http" "myip" {
   url = "http://ipv4.icanhazip.com" # outra opção "https://ifconfig.me"
 }
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners = ["099720109477"] # ou ["099720109477"] ID master com permissão para busca
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-*"] # exemplo de como listar um nome de AMI - 'aws ec2 describe-images --region us-east-1 --image-ids ami-09e67e426f25ce0d7' https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-images.html
-  }
-}
-
-resource "aws_instance" "maquina_master" {
-  ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.large"
-  key_name      = "chave_development_julia"
-  subnet_id = "subnet-0734ecf92f4be11fa"
+resource "aws_instance" "k8s_proxy" {
+  ami                         = "ami-09e67e426f25ce0d7"
+  instance_type               = "t2.micro"
+  key_name                    = "chave_development_julia"
+  subnet_id                   = "subnet-0734ecf92f4be11fa"
   associate_public_ip_address = true
   root_block_device {
-    encrypted = true
-    kms_key_id  = "arn:aws:kms:us-east-1:534566538491:key/90847cc8-47e8-4a75-8a69-2dae39f0cc0d" #key managment service (aws) -> awsmanaged keys -> aws/ebs -> copy arn
+    encrypted  = true
+    kms_key_id = "arn:aws:kms:us-east-1:534566538491:key/90847cc8-47e8-4a75-8a69-2dae39f0cc0d" #key managment service (aws) -> awsmanaged keys -> aws/ebs -> copy arn
     # volume_size = 8
   }
   tags = {
-    Name = "maquina-master-Julia"
+    Name = "julia-k8s-haproxy"
   }
-  vpc_security_group_ids = ["${aws_security_group.acessos_master.id}"]
+  vpc_security_group_ids = [aws_security_group.acessos.id]
+}
+
+resource "aws_instance" "k8s_masters" {
+  ami                         = "ami-09e67e426f25ce0d7"
+  instance_type               = "t2.large"
+  key_name                    = "chave_development_julia"
+  count                       = 3
+  subnet_id                   = "subnet-0734ecf92f4be11fa"
+  associate_public_ip_address = true
+  root_block_device {
+    encrypted  = true
+    kms_key_id = "arn:aws:kms:us-east-1:534566538491:key/90847cc8-47e8-4a75-8a69-2dae39f0cc0d" #key managment service (aws) -> awsmanaged keys -> aws/ebs -> copy arn
+    # volume_size = 8
+  }
+  tags = {
+    Name = "Julia-k8s-master-${count.index}"
+  }
+  vpc_security_group_ids = [aws_security_group.acessos_master.id]
   depends_on = [
-    aws_instance.workers,
+    aws_instance.k8s_workers,
   ]
 }
 
-resource "aws_instance" "workers" {
+resource "aws_instance" "k8s_workers" {
   ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.large"
+  instance_type = "t2.medium"
   key_name      = "chave_development_julia"
-  subnet_id = "subnet-0734ecf92f4be11fa"
-  associate_public_ip_address = true
-  root_block_device {
-    encrypted = true
-    kms_key_id  = "arn:aws:kms:us-east-1:534566538491:key/90847cc8-47e8-4a75-8a69-2dae39f0cc0d" #key managment service (aws) -> awsmanaged keys -> aws/ebs -> copy arn
-    # volume_size = 8
-  }
+  count         = 3
   tags = {
-    Name = "Julia-maquina-cluster-kubernetes-${count.index}"
+    Name = "k8s_workers-${count.index}"
   }
-  vpc_security_group_ids = ["${aws_security_group.acessos_workers.id}"]
-  count         = 2
+  vpc_security_group_ids = [aws_security_group.acessos.id]
 }
 
 
 resource "aws_security_group" "acessos_master" {
-  name        = "acessos_master"
-  description = "acessos_workers inbound traffic"
-  vpc_id = "vpc-063fc945cde94d3ab"
+  name        = "k8s-acessos_master"
+  description = "acessos inbound traffic"
 
   ingress = [
     {
-      cidr_blocks      = [
-          "0.0.0.0/0",
-        ]
       description      = "SSH from VPC"
       from_port        = 22
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
       to_port          = 22
+      protocol         = "tcp"
+      cidr_blocks      = ["${chomp(data.http.myip.body)}/32"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = null,
+      security_groups : null,
+      self : null
     },
-  {
+    {
       cidr_blocks      = []
-      description      = ""
+      description      = "Libera acesso k8s_masters"
       from_port        = 0
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = [
-          "sg-0cf865220839b7bca",
-        ]
-      self             = false
-      to_port          = 65535
-    },
-    {
-      cidr_blocks      = [
-          "0.0.0.0/0",
-        ]
-      description      = ""
-      from_port        = 30001
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 30001
-    }
-  ]
-
-  egress = [
-    {
-      from_port        = 0
-      to_port          = 0
       protocol         = "-1"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"],
-      prefix_list_ids = null,
-      security_groups: null,
-      self: null,
-      description: "Libera dados da rede interna"
-    }
-  ]
-
-  tags = {
-    Name = "acessos_master"
-  }
-}
-
-
-resource "aws_security_group" "acessos_workers" {
-  name        = "acessos_workers"
-  description = "acessos_workers inbound traffic"
-  vpc_id = "vpc-063fc945cde94d3ab"
-
-  ingress = [
-    {
-      cidr_blocks      = [
-          "0.0.0.0/0",
-        ]
-      description      = "SSH from VPC"
-      from_port        = 22
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
       security_groups  = []
-      self             = false
-      to_port          = 22
+      self             = true
+      to_port          = 0
     },
     {
       cidr_blocks      = []
-      description      = ""
+      description      = "Libera acesso k8s_workers"
       from_port        = 0
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = [
-      "sg-096dd51f38adbcf33",
-    ]
-      self             = false
-      to_port          = 65535
+      protocol         = "-1"
+      security_groups = [
+        "sg-080839aec5b31b9a3",
+      ]
+      self    = false
+      to_port = 0
     },
   ]
 
@@ -162,31 +104,97 @@ resource "aws_security_group" "acessos_workers" {
       to_port          = 0
       protocol         = "-1"
       cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"],
-      prefix_list_ids = null,
-      security_groups: null,
-      self: null,
-      description: "Libera dados da rede interna"
+      ipv6_cidr_blocks = [],
+      prefix_list_ids  = null,
+      security_groups : null,
+      self : null,
+      description : "Libera dados da rede interna"
     }
   ]
 
   tags = {
-    Name = "acessos_workers"
+    Name = "allow_ssh"
   }
 }
 
 
-# terraform refresh para mostrar o ssh
-output "maquina_master" {
+resource "aws_security_group" "acessos" {
+  name        = "k8s-workers"
+  description = "acessos inbound traffic"
+
+  ingress = [
+    {
+      description      = "SSH from VPC"
+      from_port        = 22
+      to_port          = 22
+      protocol         = "tcp"
+      cidr_blocks      = ["${chomp(data.http.myip.body)}/32"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = null,
+      security_groups : null,
+      self : null
+    },
+    {
+      cidr_blocks      = []
+      description      = ""
+      from_port        = 0
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol         = "-1"
+      security_groups = [
+        "${aws_security_group.acessos_master.id}",
+      ]
+      self    = false
+      to_port = 0
+    },
+    {
+      cidr_blocks      = []
+      description      = ""
+      from_port        = 0
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol         = "tcp"
+      security_groups  = []
+      self             = true
+      to_port          = 65535
+    },
+  ]
+
+  egress = [
+    {
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = [],
+      prefix_list_ids  = null,
+      security_groups : null,
+      self : null,
+      description : "Libera dados da rede interna"
+    }
+  ]
+
+  tags = {
+    Name = "allow_ssh"
+  }
+}
+
+output "k8s-masters" {
   value = [
-    "master - ${aws_instance.maquina_master.public_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${aws_instance.maquina_master.public_dns}"
+    for key, item in aws_instance.k8s_masters :
+    "k8s-master ${key + 1} - ${item.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns} -o ServerAliveInterval=60"
   ]
 }
 
-# terraform refresh para mostrar o ssh
-output "aws_instance_e_ssh" {
+output "output-k8s_workers" {
   value = [
-    for key, item in aws_instance.workers :
-      "worker ${key+1} - ${item.public_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns}"
+    for key, item in aws_instance.k8s_workers :
+    "k8s-workers ${key + 1} - ${item.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns} -o ServerAliveInterval=60"
+  ]
+}
+
+output "output-k8s_proxy" {
+  value = [
+    "k8s_proxy - ${aws_instance.k8s_proxy.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${aws_instance.k8s_proxy.public_dns} -o ServerAliveInterval=60"
   ]
 }
