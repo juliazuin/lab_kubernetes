@@ -45,10 +45,10 @@ resource "aws_instance" "k8s_masters" {
 }
 
 resource "aws_instance" "k8s_workers" {
-  ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.medium"
-  key_name      = "chave_development_julia"
-  count         = 3
+  ami                         = "ami-09e67e426f25ce0d7"
+  instance_type               = "t2.medium"
+  key_name                    = "chave_development_julia"
+  count                       = 3
   subnet_id                   = "subnet-0734ecf92f4be11fa"
   associate_public_ip_address = true
   root_block_device {
@@ -66,7 +66,7 @@ resource "aws_instance" "k8s_workers" {
 resource "aws_security_group" "julia_acessos_master" {
   name        = "Julia-k8s-acessos_master"
   description = "acessos inbound traffic"
-  vpc_id = "vpc-063fc945cde94d3ab"
+  vpc_id      = "vpc-063fc945cde94d3ab"
 
   ingress = [
     {
@@ -129,7 +129,7 @@ resource "aws_security_group" "julia_acessos_master" {
 resource "aws_security_group" "julia_acessos" {
   name        = "julia-k8s-workers"
   description = "acessos inbound traffic"
-  vpc_id = "vpc-063fc945cde94d3ab"
+  vpc_id      = "vpc-063fc945cde94d3ab"
 
   ingress = [
     {
@@ -191,14 +191,14 @@ resource "aws_security_group" "julia_acessos" {
 output "k8s-masters" {
   value = [
     for key, item in aws_instance.k8s_masters :
-      "k8s-master ${key+1} - ${item.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns} -o ServerAliveInterval=60"
+    "k8s-master ${key + 1} - ${item.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns} -o ServerAliveInterval=60"
   ]
 }
 
 output "output-k8s_workers" {
   value = [
     for key, item in aws_instance.k8s_workers :
-      "k8s-workers ${key+1} - ${item.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns} -o ServerAliveInterval=60"
+    "k8s-workers ${key + 1} - ${item.private_ip} - ssh -i ~/.ssh/id_rsa ubuntu@${item.public_dns} -o ServerAliveInterval=60"
   ]
 }
 

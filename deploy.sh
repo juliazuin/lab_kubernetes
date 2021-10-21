@@ -5,38 +5,38 @@
 # echo ${ID_M1_DNS}
 
 #### idéia para buscar itens do debugger do ansible ####
-# | grep -oP "(kubeadm join.*?certificate-key.*?)'" | sed 's/\\//g' | sed "s/'//g" | sed "s/'t//g" | sed "s/,//g"
+# | grep -oP "(kubeadm join.*?certificate-key.*?)'" | sed 's/\\//g' | sed "s/'//g" | sed "s/'t//g" | sed "s/,//gprojetos//lab_kubernete/"
 
-cd 0-terraform
-~/terraform/terraform init
-~/terraform/terraform fmt
-~/terraform/terraform apply -auto-approve
+cd ~/projetos/lab_kubernetes/terraform
+~/terraform init
+~/terraform fmt
+~/terraform apply -auto-approve
 
 echo  "Aguardando a criação das maquinas ..."
 sleep 5
 
-ID_M1=$(~/terraform/terraform output | grep 'k8s-master 1 -' | awk '{print $4;exit}')
-ID_M1_DNS=$(~/terraform/terraform output | grep 'k8s-master 1 -' | awk '{print $9;exit}' | cut -b 8-)
+ID_M1=$(~/terraform output | grep 'k8s-master 1 -' | awk '{print $4;exit}')
+ID_M1_DNS=$(~/terraform output | grep 'k8s-master 1 -' | awk '{print $9;exit}' | cut -b 8-)
 
-ID_M2=$(~/terraform/terraform output | grep 'k8s-master 2 -' | awk '{print $4;exit}')
-ID_M2_DNS=$(~/terraform/terraform output | grep 'k8s-master 2 -' | awk '{print $9;exit}' | cut -b 8-)
+ID_M2=$(~/terraform output | grep 'k8s-master 2 -' | awk '{print $4;exit}')
+ID_M2_DNS=$(~/terraform output | grep 'k8s-master 2 -' | awk '{print $9;exit}' | cut -b 8-)
 
-ID_M3=$(~/terraform/terraform output | grep 'k8s-master 3 -' | awk '{print $4;exit}')
-ID_M3_DNS=$(~/terraform/terraform output | grep 'k8s-master 3 -' | awk '{print $9;exit}' | cut -b 8-)
-
-
-ID_HAPROXY=$(~/terraform/terraform output | grep 'k8s_proxy -' | awk '{print $3;exit}')
-ID_HAPROXY_DNS=$(~/terraform/terraform output | grep 'k8s_proxy -' | awk '{print $8;exit}' | cut -b 8-)
+ID_M3=$(~/terraform output | grep 'k8s-master 3 -' | awk '{print $4;exit}')
+ID_M3_DNS=$(~/terraform output | grep 'k8s-master 3 -' | awk '{print $9;exit}' | cut -b 8-)
 
 
-ID_W1=$(~/terraform/terraform output | grep 'k8s-workers 1 -' | awk '{print $4;exit}')
-ID_W1_DNS=$(~/terraform/terraform output | grep 'k8s-workers 1 -' | awk '{print $9;exit}' | cut -b 8-)
+ID_HAPROXY=$(~/terraform output | grep 'k8s_proxy -' | awk '{print $3;exit}')
+ID_HAPROXY_DNS=$(~/terraform output | grep 'k8s_proxy -' | awk '{print $8;exit}' | cut -b 8-)
 
-ID_W2=$(~/terraform/terraform output | grep 'k8s-workers 2 -' | awk '{print $4;exit}')
-ID_W2_DNS=$(~/terraform/terraform output | grep 'k8s-workers 2 -' | awk '{print $9;exit}' | cut -b 8-)
 
-ID_W3=$(~/terraform/terraform output | grep 'k8s-workers 3 -' | awk '{print $4;exit}')
-ID_W3_DNS=$(~/terraform/terraform output | grep 'k8s-workers 3 -' | awk '{print $9;exit}' | cut -b 8-)
+ID_W1=$(~/terraform output | grep 'k8s-workers 1 -' | awk '{print $4;exit}')
+ID_W1_DNS=$(~/terraform output | grep 'k8s-workers 1 -' | awk '{print $9;exit}' | cut -b 8-)
+
+ID_W2=$(~/terraform output | grep 'k8s-workers 2 -' | awk '{print $4;exit}')
+ID_W2_DNS=$(~/terraform output | grep 'k8s-workers 2 -' | awk '{print $9;exit}' | cut -b 8-)
+
+ID_W3=$(~/terraform output | grep 'k8s-workers 3 -' | awk '{print $4;exit}')
+ID_W3_DNS=$(~/terraform output | grep 'k8s-workers 3 -' | awk '{print $9;exit}' | cut -b 8-)
 
 echo "
 [ec2-k8s-proxy]
@@ -123,6 +123,7 @@ ff02::3 ip6-allhosts
 " > ../host/hosts
 
 cd ../ansible
+sleep 5
 ANSIBLE_OUT=ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key ~/.ssh/id_rsa
 
 K8S_JOIN_MASTER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?certificate-key.*?)'" | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/,//g")
