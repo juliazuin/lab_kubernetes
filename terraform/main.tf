@@ -59,6 +59,7 @@ resource "aws_instance" "k8s_workers" {
 resource "aws_security_group" "acessos_master" {
   name        = "k8s-acessos_master"
   description = "acessos inbound traffic"
+  vpc_id = "vpc-063fc945cde94d3ab"
 
   ingress = [
     {
@@ -109,6 +110,7 @@ resource "aws_security_group" "acessos_master" {
 resource "aws_security_group" "acessos" {
   name        = "k8s-workers"
   description = "acessos inbound traffic"
+  vpc_id = "vpc-063fc945cde94d3ab"
 
   ingress = [
     {
