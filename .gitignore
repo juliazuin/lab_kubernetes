@@ -1,6 +1,9 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/windows,linux,macos,terraform
-# Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,macos,terraform
+# Created by https://www.toptal.com/developers/gitignore/api/windows,linux,macos,terraform,ansible
+# Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,macos,terraform,ansible
+
+### Ansible ###
+*.retry
 
 ### Linux ###
 *~
@@ -107,4 +110,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,terraform
+# End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,terraform,ansible

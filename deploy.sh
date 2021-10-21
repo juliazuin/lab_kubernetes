@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # ID_M1_DNS="ubuntu@ec2-18-234-97-123.compute-1.amazonaws.com"
 # ID_M1_DNS=$(echo "$ID_M1_DNS" | cut -b 8-)
@@ -13,7 +13,6 @@ cd ~/projetos/lab_kubernetes/terraform
 ~/terraform apply -auto-approve
 
 echo  "Aguardando a criação das maquinas ..."
-sleep 5
 
 ID_M1=$(~/terraform output | grep 'k8s-master 1 -' | awk '{print $4;exit}')
 ID_M1_DNS=$(~/terraform output | grep 'k8s-master 1 -' | awk '{print $9;exit}' | cut -b 8-)
@@ -40,21 +39,21 @@ ID_W3_DNS=$(~/terraform output | grep 'k8s-workers 3 -' | awk '{print $9;exit}' 
 
 echo "
 [ec2-k8s-proxy]
-$ID_HAPROXY
+$ID_HAPROXY_DNS
 
 [ec2-k8s-m1]
-$ID_M1
+$ID_M1_DNS
 [ec2-k8s-m2]
-$ID_M2
+$ID_M2_DNS
 [ec2-k8s-m3]
-$ID_M3
+$ID_M3_DNS
 
 [ec2-k8s-w1]
-$ID_W1
+$ID_W1_DNS
 [ec2-k8s-w2]
-$ID_W2
+$ID_W2_DNS
 [ec2-k8s-w3]
-$ID_W3
+$ID_W3_DNS
 " > ../ansible/hosts
 
 echo "
@@ -122,9 +121,10 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 " > ../host/hosts
 
-cd ../ansible
-sleep 5
-ANSIBLE_OUT=ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key ~/.ssh/id_rsa
+echo $PWD
+cd ~/projetos/lab_kubernetes/ansible
+echo $PWD
+ANSIBLE_OUT=$(ansible-playbook -i hosts provisionar.yml --private-key ~/.ssh/id_rsa)
 
 K8S_JOIN_MASTER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?certificate-key.*?)'" | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/,//g")
 K8S_JOIN_WORKER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?discovery-token-ca-cert-hash.*?)'" | head -n 1 | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/'//g" | sed "s/,//g")
@@ -132,17 +132,18 @@ K8S_JOIN_WORKER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?discovery-token-
 echo $K8S_JOIN_MASTER
 echo $K8S_JOIN_WORKER
 
-echo "
+cat <<EOF > 2-provisionar-k8s-master-auto-shell.yml
 - hosts:
   - ec2-k8s-m2
   - ec2-k8s-m3
   become: yes
   tasks:
-    - name: \"Fazendo join kubernetes master\"
+    - name: "Reset cluster"
+      shell: "kubeadm reset -f"
+    - name: "Fazendo join kubernetes master"
       shell: $K8S_JOIN_MASTER
-
-    - name: \"Colocando no path da maquina o conf do kubernetes\"
-      shell: mkdir -p \$HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf \$HOME/.kube/config && sudo chown $(id -u):$(id -g) \$HOME/.kube/config && export KUBECONFIG=/etc/kubernetes/admin.conf
+    - name: "Colocando no path da maquina o conf do kubernetes"
+      shell: mkdir -p $HOME/.kube && sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config && export KUBECONFIG=/etc/kubernetes/admin.conf
 #---
 - hosts:
   - ec2-k8s-w1
@@ -150,17 +151,17 @@ echo "
   - ec2-k8s-w3
   become: yes
   tasks:
-    - name: \"Fazendo join kubernetes worker\"
+    - name: "Reset cluster"
+      shell: "kubeadm reset -f"
+    - name: "Fazendo join kubernetes worker"
       shell: $K8S_JOIN_WORKER
-
 #---
 - hosts:
   - ec2-k8s-m1
   become: yes
   tasks:
-    - name: \"Configura weavenet para reconhecer os nós master e workers\"
-      shell: kubectl apply -f \"https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')\"
+    - name: "Configura weavenet para reconhecer os nós master e workers"
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=\$(kubectl version | base64 | tr -d '\n')"
+EOF
 
-# ansible-playbook -i hosts 2-provisionar-k8s-master.yml -u ubuntu --private-key ~/Desktop/devops/treinamentoItau
-
-" > 2-provisionar-k8s-master-auto-shell.yml
+#ansible-playbook -i hosts 2-provisionar-k8s-master-auto-shell.yml -u ubuntu --private-key ~/Desktop/devops/treinamentoItau

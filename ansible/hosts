@@ -1,18 +1,18 @@
 
 [ec2-k8s-proxy]
-10.10.10.99
+ec2-54-145-253-94.compute-1.amazonaws.com
 
 [ec2-k8s-m1]
-10.10.10.226
+ec2-35-170-243-64.compute-1.amazonaws.com
 [ec2-k8s-m2]
-10.10.10.229
+ec2-35-174-167-131.compute-1.amazonaws.com
 [ec2-k8s-m3]
-10.10.10.167
+ec2-52-87-245-108.compute-1.amazonaws.com
 
 [ec2-k8s-w1]
-10.10.10.95
+ec2-3-83-39-138.compute-1.amazonaws.com
 [ec2-k8s-w2]
-10.10.10.37
+ec2-3-88-225-100.compute-1.amazonaws.com
 [ec2-k8s-w3]
-10.10.10.13
+ec2-3-94-171-25.compute-1.amazonaws.com
 

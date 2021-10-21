@@ -1,0 +1,5 @@
+- name: "Corrigindo docker para o kubernetes"
+    copy:
+      src: "~/projetos/lab_kubernetes/yml_files/*.yml"
+      dest: "/"
+    become: yes
