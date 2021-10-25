@@ -1,0 +1,32 @@
+
+- hosts:
+  - ec2-k8s-m2
+  - ec2-k8s-m3
+  become: yes
+  tasks:
+    - name: "Fazendo join kubernetes master"
+      shell: 
+
+    - name: "Colocando no path da maquina o conf do kubernetes"
+      shell: mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown 0:0 $HOME/.kube/config && export KUBECONFIG=/etc/kubernetes/admin.conf
+#---
+- hosts:
+  - ec2-k8s-w1
+  - ec2-k8s-w2
+  - ec2-k8s-w3
+  become: yes
+  tasks:
+    - name: "Fazendo join kubernetes worker"
+      shell: 
+
+#---
+- hosts:
+  - ec2-k8s-m1
+  become: yes
+  tasks:
+    - name: "Configura weavenet para reconhecer os nós master e workers"
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version="
+
+# ansible-playbook -i hosts 2-provisionar-k8s-master.yml -u ubuntu --private-key ~/Desktop/devops/treinamentoItau
+
+

@@ -7,8 +7,20 @@ spec:
   - port: 3306
   selector:
     app: mysql
-  clusterIP: None # Selecione o nome meno do serviço, ex http://mysql:3306
-
+  # clusterIP: None # Selecione o nome meno do serviço, ex http://mysql:3306
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: clusterip-mysql
+# spec:
+#   type: ClusterIP
+#   selector:
+#     app: mysql
+#   ports:
+#     - port: 3306
+#       targetPort: 3306
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,10 +41,7 @@ spec:
         name: mysql
         env:
         - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: PASSWORD
+          value: root
         ports:
         - containerPort: 3306
           name: mysql
